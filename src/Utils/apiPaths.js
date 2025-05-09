@@ -2,7 +2,7 @@ export const BASE_URL = "http://localhost:5000"
 
 export const API_PATHS = {
     AUTH: {
-        REGISET: '/register',
+        REGISETER: '/register',
         LOGIN: "/login",
         GET_PROFILE: "/profile",
     },

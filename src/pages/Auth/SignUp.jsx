@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import AuthLayout from '../../Components/Layouts/AuthLayout'
 import { validateEmail } from '../../Utils/helper';
 import ProfilePhotoSelector from '../../Components/Inputs/ProfilePhotoSelector';
 import Input from '../../Components/Inputs/Input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axiosInstance from '../../Utils/axiosInstance';
+import { API_PATHS } from '../../Utils/apiPaths';
+import { UserContext } from '../../context/userContext';
+import uploadImage from '../../Utils/uploadeImage';
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -11,12 +15,15 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adminInviteToken, setAdminInviteToken] = useState("");
-
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext);
 
   // handle signup form
   const handleSignUp = async (e) => {
     e.preventDefault();
+
+    let profileImageUrl = "";
 
     if (!fullName) {
       setError("Please enter full name.");
@@ -34,8 +41,40 @@ const SignUp = () => {
     setError("");
 
     //api call
-  }
 
+    try {
+      if (profilePic) {
+        const imgUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imgUploadRes.imageUrl || "";
+      }
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISETER, {
+        name: fullName,
+        email,
+        password,
+        profileImageUrl,
+        adminInviteToken
+      });
+      const { token, role } = response.data;
+      console.log(response.data);
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(response.data);
+        if (role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/user/dashboard');
+        }
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      }
+      else {
+        setError("Something went wrong. Please try again later.")
+      }
+    }
+  }
   return (
     <AuthLayout>
       <div className="lg:w-full h-auto md:h-full mt-0 flex flex-col justify-center">
