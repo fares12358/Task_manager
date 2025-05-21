@@ -23,7 +23,7 @@ const SideManu = ({ activeMenu }) => {
         if (user) {
             setSideMenuData(user?.role === 'admin' ? SIDE_MENU_DATA : SIDE_MENU_USER_DATA)
         }
-        return () => { };
+        return () => {};
     }, [user]);
 
     return (
@@ -44,7 +44,7 @@ const SideManu = ({ activeMenu }) => {
             </div>
             {sideMenuData.map((item, index) => (
                 <button key={`menu_${index}`} className={`w-full flex items-center gap-4 text-[15px] 
-                    ${activeMenu == item.label ? "text-primary bg-linear-to-r from-blue-50/40 to-blue-100/50 border-r-3" 
+                    ${activeMenu == item.label ? "text-primary bg-linear-to-r from-blue-50/40 to-blue-100/50 border-r-3"
                         : ""
                     } py-3 px-6 mb-3 cursor-pointer`}
                     onClick={() => handelClick(item.path)}
