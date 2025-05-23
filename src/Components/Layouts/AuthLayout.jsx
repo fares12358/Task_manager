@@ -8,7 +8,7 @@ const AuthLayout = ({ children }) => {
                 {children}
             </div>
             <div className="hidden md:flex w-[40vw] h-screen items-center justify-center bg-blue-50">
-                <img src="/images/bg-image.png" alt="ui img" className='w-full h-full object-cover '/>
+                <img src="/images/bg-image.webp" alt="ui img" className='w-full h-full object-cover '/>
             </div>
         </div>
     )

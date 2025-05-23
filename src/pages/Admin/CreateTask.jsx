@@ -8,6 +8,10 @@ import SelectDropdown from '../../Components/Inputs/SelectDropdown';
 import SelectUsers from '../../Components/Inputs/SelectUsers';
 import TodoListInput from '../../Components/Inputs/TodoListInput';
 import AddAttachmentsInput from '../../Components/Inputs/AddAttachmentsInput';
+import axiosInstance from '../../Utils/axiosInstance';
+import { API_PATHS } from '../../Utils/apiPaths';
+import { toast } from 'react-hot-toast';
+
 const CreateTask = () => {
   const location = useLocation();
   const { taskId } = location.state || {};
@@ -42,9 +46,58 @@ const CreateTask = () => {
     })
   }
 
-  const createTask = async () => { };
+  const createTask = async () => {
+    setLoading(true);
+    try {
+      const todoList = taskData.todoChecklist?.map((item) => ({
+        text: item,
+        completed: false,
+      }));
+      const response = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
+        ...taskData,
+        dueDate: new Date(taskData.dueDate).toISOString(),
+        todoChecklist: todoList,
+      });
+      toast.success("Task Created Successfully");
+      clearData();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
   const updateTask = async () => { };
-  const handleSubmit = async () => { };
+
+  const handleSubmit = async () => {
+    setError(null);
+    if (!taskData.title.trim()) {
+      setError("Title is required!")
+      return;
+    }
+    if (!taskData.description.trim()) {
+      setError("Description is required.");
+      return;
+    }
+    if (!taskData.dueDate) {
+      setError("Due date is required!")
+      return;
+    }
+    if (taskData.assignedTo?.length === 0) {
+      setError("Task not assigned to any member");
+      return;
+    }
+    if (taskData.todoChecklist?.length === 0) {
+      setError("Add atleast one todo task");
+      return;
+    }
+    if (taskId) {
+      updateTask();
+      return;
+    }
+    createTask();
+  };
+
   const getTaskDetailsByID = async () => { };
   const deteteTask = async () => { };
 

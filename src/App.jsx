@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { Toaster } from "react-hot-toast"
 import {
   BrowserRouter as Router, Routes, Route,
   Outlet,
@@ -38,9 +39,16 @@ const App = () => {
             </Route>
             {/* default routes */}
             <Route path='/' element={<Root />} />
-
           </Routes>
         </Router>
+        <Toaster
+          toastOptions={{
+            className: '',
+            style: {
+              fontSize: "13px",
+            }
+          }}
+        />
       </div>
     </UserProvider>
   )
