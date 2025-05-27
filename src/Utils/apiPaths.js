@@ -20,7 +20,7 @@ export const API_PATHS = {
         GET_ALL_TASKS: '/getTasks',
         GET_TASKS_BY_ID: (taskId) => `/getTasks/${taskId}`,
         CREATE_TASK: '/createTasks',
-        UPDATE_TASK: (taskId) => `/createTasks/${taskId}`,
+        UPDATE_TASK: (taskId) => `/updateTask/${taskId}`,
         DELETE_TASK: (taskId) => `/deleteTask/${taskId}`,
 
         UPDATE_TASK_STATUS: (taskId) => `/task/${taskId}/status`,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import DashboardLayout from '../../Components/Layouts/DashboardLayout';
 import { LuTrash2 } from 'react-icons/lu';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +11,9 @@ import AddAttachmentsInput from '../../Components/Inputs/AddAttachmentsInput';
 import axiosInstance from '../../Utils/axiosInstance';
 import { API_PATHS } from '../../Utils/apiPaths';
 import { toast } from 'react-hot-toast';
+import moment from 'moment';
+import Model from '../../Components/Modal';
+import DeleteAlert from '../../Components/DeleteAlert';
 
 const CreateTask = () => {
   const location = useLocation();
@@ -25,6 +28,7 @@ const CreateTask = () => {
     todoChecklist: [],
     attachments: [],
   });
+
   const [currentTask, setCurrentTask] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +57,7 @@ const CreateTask = () => {
         text: item,
         completed: false,
       }));
-      const response = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
+      const res = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
         ...taskData,
         dueDate: new Date(taskData.dueDate).toISOString(),
         todoChecklist: todoList,
@@ -67,7 +71,31 @@ const CreateTask = () => {
       setLoading(false);
     }
   };
-  const updateTask = async () => { };
+
+  const updateTask = async () => {
+    setLoading(true);
+    try {
+      const todoList = taskData.todoChecklist?.map((item) => {
+        const prevTodoChecklist = currentTask?.todoChecklist || [];
+        const matchedTask = prevTodoChecklist.find((task) => task.text == item);
+        return {
+          text: item,
+          completed: matchedTask ? matchedTask.completed : false,
+        };
+      });
+      const res = await axiosInstance.put(API_PATHS.TASKS.UPDATE_TASK(taskId), {
+        ...taskData,
+        dueDate: new Date(taskData.dueDate).toISOString(),
+        todoChecklist: todoList,
+      });
+      toast.success("Task Updated Successfully");
+    } catch (err) {
+      console.error("Error creating task:", err);
+      setLoading(false)
+    } finally {
+      setLoading(false)
+    }
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -98,8 +126,44 @@ const CreateTask = () => {
     createTask();
   };
 
-  const getTaskDetailsByID = async () => { };
-  const deteteTask = async () => { };
+  const getTaskDetailsByID = async () => {
+    try {
+      const res = await axiosInstance.get(API_PATHS.TASKS.GET_TASKS_BY_ID(taskId))
+      if (res.data) {
+        const taskInfo = res.data;
+        setCurrentTask(taskInfo);
+        setTaskData((prevState) => ({
+          title: taskInfo.title,
+          description: taskInfo.description,
+          priority: taskInfo.priority,
+          dueDate: taskInfo.dueDate ? moment(taskInfo.dueDate).format("YYYY-MM-DD") : null,
+          assignedTo: taskInfo?.assignedTo?.map((item) => item?._id || []),
+          todoChecklist: taskInfo?.todoChecklist?.map((item) => item?.text) || [],
+          attachments: taskInfo?.attachments || [],
+        }))
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  const deleteTask = async () => {
+    try {
+      await axiosInstance.delete(API_PATHS.TASKS.DELETE_TASK(taskId));
+      setOpenDeleteAlert(false);
+      toast.success("Expense details deleted successfully");
+      navigate('/admin/tasks')
+    } catch (err) {
+      console.error("Error deleting expense:", err.res?.data?.message || err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (taskId) {
+      getTaskDetailsByID()
+    }
+    return () => { }
+  }, [taskId])
+
 
 
   return (
@@ -107,7 +171,7 @@ const CreateTask = () => {
       <div className="mt-5">
         <div className="grid grid-cols-1 md:grid-cols-4 mt-4">
           <div className="form-card col-span-3">
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl md:text-xl font-medium">
                 {taskId ? "Update Task" : "Create Task"}
               </h2>
@@ -194,6 +258,16 @@ const CreateTask = () => {
           </div>
         </div>
       </div>
+
+      <Model
+        isOpen={openDeleteAlert}
+        onClose={() => setOpenDeleteAlert(false)}
+        title={"Delete Task"}>
+
+        <DeleteAlert
+          content="Are you sure you want to delete this task?"
+          onDelete={() => deleteTask()} />
+      </Model>
     </DashboardLayout>
   )
 }
