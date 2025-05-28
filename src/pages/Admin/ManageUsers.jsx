@@ -4,6 +4,7 @@ import axiosInstance from '../../Utils/axiosInstance'
 import { API_PATHS } from '../../Utils/apiPaths'
 import UserCard from '../../Components/Cards/UserCard'
 import { LuFileSpreadsheet } from 'react-icons/lu'
+import { toast } from 'react-hot-toast';
 
 const ManageUsers = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -17,7 +18,7 @@ const ManageUsers = () => {
       console.error("Error fetching users:", err);
     }
   }
-  const handleDownloadReport = () => {
+  const handleDownloadReport = async() => {
     try{
       const res =await axiosInstance.get(API_PATHS.REPORTS.EXPORT_USERS,{
         responseType :"blob",
@@ -31,7 +32,8 @@ const ManageUsers = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     }catch(err){
-      
+      console.error("Error downloading expense details:",err);
+      toast.error("Failed to download expense details. Please try again.");  
     }
   }
   useEffect(() => {
