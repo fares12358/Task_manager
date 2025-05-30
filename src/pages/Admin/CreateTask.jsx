@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import moment from 'moment';
 import Model from '../../Components/Modal';
 import DeleteAlert from '../../Components/DeleteAlert';
+import BtnLoader from '../../Components/BtnLoader';
 
 const CreateTask = () => {
   const location = useLocation();
@@ -28,7 +29,6 @@ const CreateTask = () => {
     todoChecklist: [],
     attachments: [],
   });
-
   const [currentTask, setCurrentTask] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,8 +51,8 @@ const CreateTask = () => {
   }
 
   const createTask = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const todoList = taskData.todoChecklist?.map((item) => ({
         text: item,
         completed: false,
@@ -66,15 +66,14 @@ const CreateTask = () => {
       clearData();
     } catch (error) {
       console.error("Error creating task:", error);
-      setLoading(false);
     } finally {
       setLoading(false);
     }
   };
 
   const updateTask = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const todoList = taskData.todoChecklist?.map((item) => {
         const prevTodoChecklist = currentTask?.todoChecklist || [];
         const matchedTask = prevTodoChecklist.find((task) => task.text == item);
@@ -91,7 +90,6 @@ const CreateTask = () => {
       toast.success("Task Updated Successfully");
     } catch (err) {
       console.error("Error creating task:", err);
-      setLoading(false)
     } finally {
       setLoading(false)
     }
@@ -128,6 +126,7 @@ const CreateTask = () => {
 
   const getTaskDetailsByID = async () => {
     try {
+      setLoading(true)
       const res = await axiosInstance.get(API_PATHS.TASKS.GET_TASKS_BY_ID(taskId))
       if (res.data) {
         const taskInfo = res.data;
@@ -144,16 +143,21 @@ const CreateTask = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false)
     }
   };
   const deleteTask = async () => {
     try {
+      setLoading(true)
       await axiosInstance.delete(API_PATHS.TASKS.DELETE_TASK(taskId));
       setOpenDeleteAlert(false);
       toast.success("Expense details deleted successfully");
       navigate('/admin/tasks')
     } catch (err) {
       console.error("Error deleting expense:", err.res?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -251,8 +255,13 @@ const CreateTask = () => {
               <p className="text-xs font-medium text-red-500 mt-5">{error}</p>
             )}
             <div className="flex justify-end mt-7">
-              <button className='add-btn' onClick={handleSubmit} disabled={loading}>
-                {taskId ? "UPDATE TASK" : "CREATE TASK"}
+              <button className={`${ loading? "relative flex items-center justify-center h-[50px]  w-full border bg-slate-100/50 border-slate-300 rounded-sm":"add-btn"}`} onClick={handleSubmit} disabled={loading}>
+                {
+                  loading ?
+                    <BtnLoader />
+                    :
+                    taskId ? "UPDATE TASK" : "CREATE TASK"
+                }
               </button>
             </div>
           </div>

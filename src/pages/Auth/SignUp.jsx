@@ -8,6 +8,7 @@ import axiosInstance from '../../Utils/axiosInstance';
 import { API_PATHS } from '../../Utils/apiPaths';
 import { UserContext } from '../../context/userContext';
 import uploadImage from '../../Utils/uploadeImage';
+import BtnLoader from '../../Components/BtnLoader';
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -16,6 +17,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [adminInviteToken, setAdminInviteToken] = useState("");
   const [error, setError] = useState(null);
+  const [Loading, setLoading] = useState(false)
   const navigate = useNavigate();
   const { updateUser } = useContext(UserContext);
 
@@ -43,6 +45,7 @@ const SignUp = () => {
     //api call
 
     try {
+      setLoading(true)
       if (profilePic) {
         const imgUploadRes = await uploadImage(profilePic);
         profileImageUrl = imgUploadRes.imageUrl || "";
@@ -73,6 +76,8 @@ const SignUp = () => {
       else {
         setError("Something went wrong. Please try again later.")
       }
+    } finally {
+      setLoading(false)
     }
   }
   return (
@@ -89,8 +94,13 @@ const SignUp = () => {
             <Input type="text" value={adminInviteToken} onChange={({ target }) => setAdminInviteToken(target.value)} label="Admin Invite Token" placeholder="6 Digit Code" />
           </div>
           {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
-          <button type='submit' className='btn-primary'>
-            SIGN UP
+          <button type='submit' className={`${Loading ? "relative flex items-center justify-center h-[50px]  w-full border bg-slate-100/50 border-slate-300 rounded-sm" : "btn-primary"}`}>
+            {
+              Loading ?
+                <BtnLoader />
+                :
+                'SIGN UP'
+            }
           </button>
           <p className='text-[13px] text-slate-800 mt-3'>
             Already have an account?
